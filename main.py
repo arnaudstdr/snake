@@ -1,11 +1,14 @@
+# snake_game.py
+
 import pygame
 import time
 import random
+import os
 
-#Initialisation de Pygame
+# Initialisation de Pygame
 pygame.init()
 
-# Définir les couleurs 
+# Définir les couleurs
 white = (255, 255, 255)
 yellow = (255, 255, 102)
 black = (0, 0, 0)
@@ -18,7 +21,7 @@ dis_width = 800
 dis_height = 600
 
 dis = pygame.display.set_mode((dis_width, dis_height))
-pygame.display.set_caption('Snake')
+pygame.display.set_caption('Snake Game')
 
 clock = pygame.time.Clock()
 snake_block = 10
@@ -27,15 +30,39 @@ snake_speed = 15
 font_style = pygame.font.SysFont("bahnschrift", 25)
 score_font = pygame.font.SysFont("comicsansms", 35)
 
-def our_snake(snake_block, snale_list):
-    for x in snale_list:
+
+def our_snake(snake_block, snake_list):
+    for x in snake_list:
         pygame.draw.rect(dis, black, [x[0], x[1], snake_block, snake_block])
 
-def message(msg, color):
-    mesg = font_style.render(msg, True, color)
-    dis.blit(mesg, [dis_width / 6, dis_height /  3])
 
-def gameLoop(): # Création de la boucle principale du jeu
+def message(msg, color, y_displace=0):
+    mesg = font_style.render(msg, True, color)
+    dis.blit(mesg, [dis_width / 6, dis_height / 3 + y_displace])
+
+
+def read_high_scores(file_name):
+    if not os.path.exists(file_name):
+        return []
+    with open(file_name, 'r') as file:
+        scores = file.readlines()
+    scores = [int(score.strip()) for score in scores]
+    return scores
+
+
+def write_high_scores(file_name, scores):
+    with open(file_name, 'w') as file:
+        for score in scores:
+            file.write(f"{score}\n")
+
+
+def update_high_scores(scores, new_score, max_scores=1):
+    scores.append(new_score)
+    scores = sorted(scores, reverse=True)[:max_scores]
+    return scores
+
+
+def gameLoop():
     game_over = False
     game_close = False
 
@@ -51,11 +78,24 @@ def gameLoop(): # Création de la boucle principale du jeu
     foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
     foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
 
+    high_scores = read_high_scores("high_scores.txt")
+
     while not game_over:
 
-        while game_close == True:
+        while game_close:
             dis.fill(blue)
-            message("You Lost ! Press Q-Quit or C-Play Again", red)
+            score = Length_of_snake - 1
+
+            message("You Lost! Press Q-Quit or C-Play Again", red)
+            message(f"Your Score: {score}", yellow, 40)
+
+            high_scores = update_high_scores(high_scores, score)
+            write_high_scores("high_scores.txt", high_scores)
+
+            message("High Scores:", yellow, 80)
+            for i, high_score in enumerate(high_scores):
+                message(f"{i + 1}. {high_score}", yellow, 120 + i * 20)
+
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -64,7 +104,7 @@ def gameLoop(): # Création de la boucle principale du jeu
                         game_over = True
                         game_close = False
                     if event.key == pygame.K_c:
-                        game_over()
+                        gameLoop()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -85,7 +125,6 @@ def gameLoop(): # Création de la boucle principale du jeu
 
         if x1 >= dis_width or x1 < 0 or y1 >= dis_height or y1 < 0:
             game_close = True
-
         x1 += x1_change
         y1 += y1_change
         dis.fill(blue)
@@ -106,8 +145,8 @@ def gameLoop(): # Création de la boucle principale du jeu
         pygame.display.update()
 
         if x1 == foodx and y1 == foody:
-            foody = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10
-            foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10
+            foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
+            foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
             Length_of_snake += 1
 
         clock.tick(snake_speed)
