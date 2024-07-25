@@ -76,6 +76,10 @@ def flash_screen():
         pygame.display.update()
         time.sleep(0.1)
 
+def show_score(score):
+    value = score_font.render(f"Your Score: {score}", True, yellow)
+    dis.blit(value, [0, 0])
+
 def gameLoop():
     game_over = False
     game_close = False
@@ -159,6 +163,7 @@ def gameLoop():
                 game_close = True
 
         our_snake(snake_block, snake_List)
+        show_score(Length_of_snake - 1) # Affiche le score en temps réel
 
         pygame.display.update()
 
