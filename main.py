@@ -37,12 +37,16 @@ initial_speed = 10
 font_style = pygame.font.SysFont("bahnschrift", 25)
 score_font = pygame.font.SysFont("comicsansms", 35)
 
-
+# Fonction pour nos segments de serpent
 def our_snake(snake_block, snake_list):
-    for x in snake_list:
-        pygame.draw.rect(dis, black, [x[0], x[1], snake_block, snake_block])
+    for i in range(len(snake_list) - 1, 0, -1):
+        pygame.draw.rect(dis, black, [snake_list[i][0], snake_list[i][1], snake_block, snake_block])
+        # Interpolation pour des mouvements fluides
+        snake_list[i][0] += (snake_list[i - 1][0] - snake_list[i][0]) * 0.5
+        snake_list[i][1] += (snake_list[i - 1][1] - snake_list[i][1]) * 0.5
+    pygame.draw.rect(dis, black, [snake_list[0][0], snake_list[0][1], snake_block, snake_block])
 
-
+# Fonction pour afficher un message sur l'écran
 def message(msg, color, y_displace=0):
     mesg = font_style.render(msg, True, color)
     dis.blit(mesg, [dis_width / 6, dis_height / 3 + y_displace])
@@ -168,7 +172,6 @@ def gameLoop():
 
         our_snake(snake_block, snake_List)
         show_score(Length_of_snake - 1) # Affiche le score en temps réel
-
         pygame.display.update()
 
         if x1 == foodx and y1 == foody:
